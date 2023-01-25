@@ -5,11 +5,32 @@ import { useNavigate } from 'react-router-dom'
 import { FcGoogle } from 'react-icons/fc'
 import shareVideo from '../assets/share.mp4'
 import logo from '../assets/logowhite.png'
+import jwt_decode from "jwt-decode";
+
+import { client } from '../client';
 
 const Login = () => {
+  const navigate = useNavigate();
 
   const responseGoogle= (response) => {
-    console.log(response);
+    localStorage.setItem('user', JSON.stringify(response.profileObj));
+    var decodedHeader = jwt_decode(response.credential);
+    console.log(decodedHeader);
+
+    const {name, sub, picture } = decodedHeader;
+    
+    const doc = {
+      _id: sub,
+      _type: 'user',
+      userName: name,
+      image: picture,
+    }
+
+    client.createIfNotExists(doc)
+      .then(() => {
+        navigate('/', { replace: true })
+      })
+
   }
 
   return (
